@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using DnsClient.Protocol;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Play.Common;
@@ -25,15 +26,27 @@ namespace Play.Inventory.Service.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<InventoryItem>>> GetAsync(Guid userId)
+        public async Task<ActionResult<IEnumerable<InventoryItemDto>>> GetAsync(Guid userId)
         {
             if (userId == Guid.Empty)
             {
                 return BadRequest();
             }
-            var items = (await repository.GetAllAsync(i => i.UserId == userId))
-                        .Select(i => i.AsDto());
-            return Ok(items);
+            //Get all Catalog items
+            var catalogItems = await catalogClient.GetCatalogItemsAsyn();
+
+            //Get all item in iventory
+            var inventoryItemEntities = await repository.GetAllAsync(i => i.UserId == userId);
+
+            //Mapping catalog infor to inventory item (include name and description)
+            var inventoryItemDtos = inventoryItemEntities.Select(inventoryItem =>
+            {
+                var catalogItem = catalogItems.Single(catalogItem => catalogItem.Id == inventoryItem.CatalogItemId);
+                return inventoryItem.AsDto(catalogItem.Name, catalogItem.Description);
+            }
+            );
+
+            return Ok(inventoryItemDtos);
         }
 
         [HttpPost]
