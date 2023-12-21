@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Play.Common;
+using Play.Inventory.Service.Clients;
 using Play.Inventory.Service.Entities;
 using static Play.Inventory.Service.Dtos;
 
@@ -16,9 +17,11 @@ namespace Play.Inventory.Service.Controllers
     public class ItemsController : ControllerBase
     {
         private readonly IRepository<InventoryItem> repository;
-        public ItemsController(IRepository<InventoryItem> repository)
+        private readonly CatalogClient catalogClient;
+        public ItemsController(IRepository<InventoryItem> repository, CatalogClient catalogClient)
         {
             this.repository = repository;
+            this.catalogClient = catalogClient;
         }
 
         [HttpGet]
