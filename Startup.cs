@@ -28,6 +28,7 @@ namespace Play.Inventory.Service
             services.AddMongoDbServices()
                         .AddMongoRepository<InventoryItem>("inventoryitems");
 
+            Random jitterer = new Random();
             services.AddHttpClient<CatalogClient>(client =>
             {
                 client.BaseAddress = new Uri("https://localhost:5001");
@@ -35,6 +36,8 @@ namespace Play.Inventory.Service
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(
                 5,
                 retryAttemp => TimeSpan.FromSeconds(Math.Pow(2, retryAttemp))
+                            + TimeSpan.FromMilliseconds(jitterer.Next(0, 1000))
+
             ))
             .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(1));
 
