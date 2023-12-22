@@ -9,24 +9,26 @@ namespace Play.Inventory.Service.Consumers
     public class CatalogItemCreatedConsumer : IConsumer<CatalogItemCreated>
     {
         private readonly IRepository<CatalogItem> repository;
+
         public CatalogItemCreatedConsumer(IRepository<CatalogItem> repository)
         {
             this.repository = repository;
         }
+
         public async Task Consume(ConsumeContext<CatalogItemCreated> context)
         {
             var message = context.Message;
 
             var catalogItem = await repository.GetAsync(message.ItemId);
 
-            if (catalogItem is not null)
+            if (catalogItem != null)
             {
                 return;
             }
 
             catalogItem = new CatalogItem
             {
-                Id = catalogItem.Id,
+                Id = message.ItemId,
                 Name = message.Name,
                 Description = message.Description
             };
