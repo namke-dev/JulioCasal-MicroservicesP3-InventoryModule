@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using DnsClient.Protocol;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Play.Common;
-using Play.Inventory.Service.Clients;
 using Play.Inventory.Service.Entities;
 using static Play.Inventory.Service.Dtos;
 
