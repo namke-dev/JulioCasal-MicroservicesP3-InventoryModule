@@ -10,14 +10,15 @@ using static Play.Inventory.Service.Dtos;
 namespace Play.Inventory.Service.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("items")]
     public class ItemsController : ControllerBase
     {
         private readonly IRepository<InventoryItem> inventoryItemsRepository;
         private readonly IRepository<CatalogItem> catalogItemRepository;
-        public ItemsController(IRepository<InventoryItem> repository, IRepository<CatalogItem> catalogItemRepository)
+
+        public ItemsController(IRepository<InventoryItem> inventoryItemsRepository, IRepository<CatalogItem> catalogItemRepository)
         {
-            this.inventoryItemsRepository = repository;
+            this.inventoryItemsRepository = inventoryItemsRepository;
             this.catalogItemRepository = catalogItemRepository;
         }
 
@@ -29,13 +30,14 @@ namespace Play.Inventory.Service.Controllers
                 return BadRequest();
             }
 
-            //Get all item in iventory
+            //Get list item in user iventory
             var inventoryItemEntities = await inventoryItemsRepository.GetAllAsync(i => i.UserId == userId);
-            //Get all Catalog items
+            //Get list item's Catalog id
             var itemIds = inventoryItemEntities.Select(item => item.CatalogItemId);
+            //Get list catalogItem from item's Catalog id
             var catalogItemEntities = await catalogItemRepository.GetAllAsync(item => itemIds.Contains(item.Id));
 
-            //Mapping catalog infor to inventory item (include name and description)
+            //Mapping catalog infor => inventory item dto (include name and description)
             var inventoryItemDtos = inventoryItemEntities.Select(inventoryItem =>
             {
                 var catalogItem = catalogItemEntities.Single(catalogItem => catalogItem.Id == inventoryItem.CatalogItemId);
