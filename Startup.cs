@@ -10,6 +10,7 @@ using Play.Common.MongoDb;
 using Play.Inventory.Service.Clients;
 using Play.Inventory.Service.Entities;
 using Polly;
+using Polly.Timeout;
 
 namespace Play.Inventory.Service
 {
@@ -38,6 +39,11 @@ namespace Play.Inventory.Service
                 retryAttemp => TimeSpan.FromSeconds(Math.Pow(2, retryAttemp))
                             + TimeSpan.FromMilliseconds(jitterer.Next(0, 1000))
 
+            ))
+            .AddTransientHttpErrorPolicy(builder => builder.Or<TimeoutRejectedException>().CircuitBreakerAsync(
+                //If there are over 3 request at a time, the circuit will open
+                // => sequest sent will be fail immediately
+                3, TimeSpan.FromSeconds(15) //=> circuit will open for 15 secs
             ))
             .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(1));
 
